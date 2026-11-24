@@ -1,0 +1,18 @@
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+
+# Ansible
+ansible/inventory.yml
+ansible/*.retry
+ansible/secrets.yml
+
+# Divers
+*.log
+.DS_Store
+
+CLAUDE.md
+
