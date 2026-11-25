@@ -19,6 +19,7 @@ spec:
     - repoURL: https://github.com/maxime-heim/ansible-kubernetes-kubeadm
       targetRevision: HEAD
       ref: values
+      path: gitops/cert-manager/manifests
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
