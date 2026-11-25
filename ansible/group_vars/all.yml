@@ -33,7 +33,7 @@ helm_charts:
     version: "43.0.0"
   argo-cd:
     repo: https://argoproj.github.io/argo-helm
-    version: "7.8.26"
+    version: "10.20.0"
   kube-prometheus-stack:
     repo: https://prometheus-community.github.io/helm-charts
     version: "93.11.0"
