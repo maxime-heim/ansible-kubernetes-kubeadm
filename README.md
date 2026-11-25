@@ -169,7 +169,7 @@ Les identifiants sont affichés à la fin du playbook Ansible.
 ## Reset
 
 ```bash
-cd terraform && terraform destroy
+make destroy
 # Supprimer le template depuis pve1 si nécessaire :
 qm destroy 9004 --purge
 ```
