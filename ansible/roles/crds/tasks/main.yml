@@ -1,21 +1,9 @@
 ---
-- name: Ajouter le repo Helm prometheus-community
-  become: false
-  command: helm repo add --force-update prometheus-community https://prometheus-community.github.io/helm-charts
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Installer les CRDs Prometheus Operator
   become: false
   command: >
     helm upgrade --install prometheus-operator-crds
-    prometheus-community/prometheus-operator-crds
+    {{ helm_charts_dir }}/prometheus-operator-crds-{{ helm_charts['prometheus-operator-crds'].version }}.tgz
     --namespace kube-system
     --wait
   environment:

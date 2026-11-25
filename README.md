@@ -24,10 +24,15 @@ Cluster Kubernetes homelab déployé sur Proxmox via Terraform et Ansible. Aucun
 ```
 Nœud Proxmox   VM              Rôle            CPU   RAM     Disque
 pve1           k8s-cp-01       control-plane    3     7 GB    20 GB
-pve2           k8s-worker-01   worker           2     6 GB    20 GB
-pve3           k8s-worker-02   worker           2     6 GB    20 GB
+pve2           k8s-cp-02       control-plane    3     7 GB    20 GB
+pve3           k8s-cp-03       control-plane    3     7 GB    20 GB
+pve1           k8s-worker-01   worker           2     6 GB    20 GB
+pve2           k8s-worker-02   worker           2     6 GB    20 GB
+pve3           k8s-worker-03   worker           2     6 GB    20 GB
 ```
 
+- IPs des nœuds : control planes `192.168.1.221-223`, workers `192.168.1.231-233` (statiques, configurables dans `terraform/variables.tf`)
+- VIP de l'API Kubernetes : `192.168.1.220` (kube-vip, configurable dans `ansible/group_vars/all.yml`)
 - Réseau pods : `10.244.0.0/16` (Cilium)
 - IP LoadBalancer Traefik : `192.168.1.200` (MetalLB, configurable dans `ansible/group_vars/all.yml`)
 - Domaine local : `homelab.local` (configurable dans `ansible/group_vars/all.yml`)
@@ -93,10 +98,11 @@ make setup
 ```bash
 cd terraform
 cp terraform.tfvars.example terraform.tfvars
-# Remplir proxmox_endpoint, proxmox_credentials, ssh_public_key
+# Remplir proxmox_endpoint, et ssh_public_key
+make up
 ```
 
-Terraform crée les 3 VMs (1 par nœud Proxmox) et génère `ansible/inventory.yml`.
+Terraform crée les 6 VMs (1 control plane et 1 worker par nœud Proxmox) et génère `ansible/inventory.yml`.
 
 ### 2. Ansible — Cluster complet
 
@@ -105,7 +111,8 @@ Le playbook installe dans l'ordre :
 | Phase | Rôles |
 |-------|-------|
 | Nœuds | swap, kernel, storage, containerd, kubernetes_packages |
-| Control plane | k8s_control_plane, helm, cilium |
+| Control plane | k8s_control_plane (+ kube_vip), helm, cilium |
+| Control planes secondaires | k8s_control_plane_join |
 | Workers | k8s_worker |
 | Addons | metrics_server, longhorn, metallb, cert_manager, traefik, argocd, monitoring |
 

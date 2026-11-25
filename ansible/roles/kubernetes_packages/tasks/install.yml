@@ -29,7 +29,7 @@
     - kubeadm
     - kubectl
 
-- name: Activer kubelet
+- name: Enabled kubelet
   systemd:
     name: kubelet
     enabled: true

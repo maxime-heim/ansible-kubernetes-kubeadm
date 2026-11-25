@@ -14,20 +14,14 @@
   environment:
     KUBECONFIG: /home/debian/.kube/config
 
-- name: Ajouter le repo Helm ArgoCD
-  kubernetes.core.helm_repository:
-    name: argo
-    repo_url: https://argoproj.github.io/argo-helm
-
 - name: Installer ArgoCD via Helm
   kubernetes.core.helm:
     name: argocd
-    chart_ref: argo/argo-cd
-    chart_version: "{{ argocd_version }}"
+    chart_ref: "{{ helm_charts_dir }}/argo-cd-{{ helm_charts['argo-cd'].version }}.tgz"
     release_namespace: "{{ argocd_namespace }}"
     create_namespace: false
     wait: true
-    wait_timeout: 300s
+    timeout: 300s
     values:
       server:
         insecure: true

@@ -1,16 +1,4 @@
 ---
-- name: Ajouter le repo Helm Traefik
-  become: false
-  command: helm repo add --force-update traefik https://traefik.github.io/charts
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Copier le fichier de values Traefik
   copy:
     src: values.yaml
@@ -19,7 +7,7 @@
 - name: Installer Traefik
   become: false
   command: >
-    helm upgrade --install traefik traefik/traefik
+    helm upgrade --install traefik {{ helm_charts_dir }}/traefik-{{ helm_charts['traefik'].version }}.tgz
     --namespace traefik
     --create-namespace
     --wait

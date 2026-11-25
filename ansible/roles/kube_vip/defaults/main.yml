@@ -1,0 +1,3 @@
+# kubeconfig mounted in the pod. On the first control plane, kubeadm init needs
+# super-admin.conf: admin.conf has no rights until the end of the init.
+kube_vip_kubeconfig: /etc/kubernetes/admin.conf

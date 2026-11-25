@@ -17,6 +17,14 @@
     - helm
     - cilium
 
+# One at a time: each join adds an etcd member.
+- name: Join the other control planes
+  hosts: control_plane_secondary
+  become: true
+  serial: 1
+  roles:
+    - k8s_control_plane_join
+
 - name: Joindre les workers au cluster
   hosts: workers
   become: true

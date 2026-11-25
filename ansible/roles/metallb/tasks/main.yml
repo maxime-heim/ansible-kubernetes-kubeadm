@@ -1,20 +1,8 @@
 ---
-- name: Ajouter le repo Helm MetalLB
-  become: false
-  command: helm repo add --force-update metallb https://metallb.github.io/metallb
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Installer MetalLB
   become: false
   command: >
-    helm upgrade --install metallb metallb/metallb
+    helm upgrade --install metallb {{ helm_charts_dir }}/metallb-{{ helm_charts['metallb'].version }}.tgz
     --namespace metallb-system
     --create-namespace
     --wait

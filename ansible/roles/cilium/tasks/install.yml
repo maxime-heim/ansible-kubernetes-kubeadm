@@ -1,35 +1,23 @@
 ---
-- name: Ajouter le repo Helm Cilium
-  become: false
-  command: helm repo add --force-update cilium https://helm.cilium.io/
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Installer Cilium
   become: false
   command: >-
-    helm upgrade --install cilium cilium/cilium
+    helm upgrade --install cilium {{ helm_charts_dir }}/cilium-{{ helm_charts['cilium'].version }}.tgz
     --namespace kube-system
     --set ipam.mode=kubernetes
     --set routingMode=native
     --set autoDirectNodeRoutes=true
-    --set ipv4NativeRoutingCIDR={{ node_cidr }}
+    --set ipv4NativeRoutingCIDR={{ pod_network_cidr }}
     --set hubble.enabled=true
     --set hubble.relay.enabled=true
     --set hubble.ui.enabled=true
     --set hubble.ui.service.type=NodePort
     --set hubble.metrics.enabled="{dns,drop,tcp,flow,icmp,http}"
-    --set operator.replicas={{ groups['control_plane'] | length }}
+    --set operator.replicas={{ [2, (groups['control_plane'] + groups['control_plane_secondary'] | default([])) | length] | min }}
     --set operator.prometheus.enabled=true
     --set prometheus.enabled=true
     --set dashboards.enabled=true
-    --set policyEnforcementMode=audit
+    --set policyAuditMode=true
     --set encryption.enabled=true
     --set encryption.type=wireguard 
   environment:

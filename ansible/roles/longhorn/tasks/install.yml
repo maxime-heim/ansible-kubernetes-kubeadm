@@ -1,16 +1,4 @@
 ---
-- name: Ajouter le repo Helm Longhorn
-  become: false
-  command: helm repo add --force-update longhorn https://charts.longhorn.io
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Copier le fichier de values Longhorn
   copy:
     src: "{{ playbook_dir }}/../gitops/longhorn/values.yaml"
@@ -19,7 +7,7 @@
 - name: Installer Longhorn
   become: false
   command: >
-    helm upgrade --install longhorn longhorn/longhorn
+    helm upgrade --install longhorn {{ helm_charts_dir }}/longhorn-{{ helm_charts['longhorn'].version }}.tgz
     --namespace longhorn-system
     --create-namespace
     --wait
@@ -32,4 +20,23 @@
   command: kubectl rollout status daemonset/longhorn-manager -n longhorn-system --timeout=300s
   environment:
     KUBECONFIG: /home/debian/.kube/config
+  changed_when: false
+
+# The CSI components are created by longhorn-driver-deployer, outside the chart:
+# "helm --wait" does not see them. Their image pulls saturate the uplink, and the
+# next roles then fail on DNS timeouts.
+- name: Wait for the Longhorn CSI components to be created
+  become: false
+  command: kubectl wait --for=create {{ item }} -n longhorn-system --timeout=300s
+  environment:
+    KUBECONFIG: /home/debian/.kube/config
+  loop: "{{ longhorn_csi_components }}"
+  changed_when: false
+
+- name: Wait for the Longhorn CSI components to be ready
+  become: false
+  command: kubectl rollout status {{ item }} -n longhorn-system --timeout=600s
+  environment:
+    KUBECONFIG: /home/debian/.kube/config
+  loop: "{{ longhorn_csi_components }}"
   changed_when: false

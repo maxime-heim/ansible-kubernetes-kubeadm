@@ -5,3 +5,35 @@ pod_network_cidr: "10.244.0.0/16"
 node_cidr: "192.168.1.0/24"
 homelab_domain: homelab.local
 metallb_ip_range: "192.168.1.200-192.168.1.210"
+
+# Virtual IP of the API server, carried by kube-vip (outside DHCP and MetalLB ranges)
+control_plane_vip: "192.168.1.220"
+kube_vip_version: "v1.3.2"
+
+# Helm charts, all downloaded on the control plane by the helm role
+helm_charts_dir: /opt/helm-charts
+helm_charts:
+  cilium:
+    repo: https://helm.cilium.io/
+    version: "1.20.5"
+  prometheus-operator-crds:
+    repo: https://prometheus-community.github.io/helm-charts
+    version: "33.0.2"
+  longhorn:
+    repo: https://charts.longhorn.io
+    version: "1.13.0"
+  metallb:
+    repo: https://metallb.github.io/metallb
+    version: "0.16.2"
+  cert-manager:
+    repo: https://charts.jetstack.io
+    version: "v1.21.3"
+  traefik:
+    repo: https://traefik.github.io/charts
+    version: "43.0.0"
+  argo-cd:
+    repo: https://argoproj.github.io/argo-helm
+    version: "7.8.26"
+  kube-prometheus-stack:
+    repo: https://prometheus-community.github.io/helm-charts
+    version: "93.11.0"

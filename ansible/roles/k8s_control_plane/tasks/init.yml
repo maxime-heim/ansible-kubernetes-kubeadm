@@ -1,8 +1,38 @@
 ---
+- name: Check whether the control plane is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: admin_conf
+
+- name: Deploy kube-vip for the init
+  include_role:
+    name: kube_vip
+  vars:
+    kube_vip_kubeconfig: /etc/kubernetes/super-admin.conf
+  when: not admin_conf.stat.exists
+
 - name: Initialiser le control plane
   command: >
     kubeadm init
+    --control-plane-endpoint={{ control_plane_vip }}:6443
+    --apiserver-advertise-address={{ ansible_host }}
     --pod-network-cidr={{ pod_network_cidr }}
     --kubernetes-version={{ kubernetes_version }}
   args:
     creates: /etc/kubernetes/admin.conf
+
+- name: Switch kube-vip to admin.conf
+  include_role:
+    name: kube_vip
+
+# kubelet restarts the pod after the switch: the VIP can drop for a few seconds.
+- name: Wait for the API server on the VIP
+  command: >
+    kubectl --kubeconfig /etc/kubernetes/admin.conf --request-timeout=5s
+    get pod kube-vip-{{ inventory_hostname }} -n kube-system
+    -o jsonpath='{.spec.volumes[0].hostPath.path} {.status.conditions[?(@.type=="Ready")].status}'
+  register: kube_vip_pod
+  until: kube_vip_pod.stdout == "/etc/kubernetes/admin.conf True"
+  retries: 30
+  delay: 5
+  changed_when: false

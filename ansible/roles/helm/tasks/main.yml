@@ -3,3 +3,31 @@
   shell: curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
   args:
     creates: /usr/local/bin/helm
+
+- name: Create the Helm charts directory
+  file:
+    path: "{{ helm_charts_dir }}"
+    state: directory
+    owner: debian
+    group: debian
+    mode: '0755'
+
+# All the charts are downloaded here, before the other nodes join: later on, the
+# image pulls saturate the link to the router and Helm fails on DNS timeouts.
+# Helm has no retry option, so the download is retried (never the install).
+- name: Download the Helm charts
+  become: false
+  command: >
+    helm pull {{ item.key }}
+    --repo {{ item.value.repo }}
+    --version {{ item.value.version }}
+    --destination {{ helm_charts_dir }}
+  args:
+    creates: "{{ helm_charts_dir }}/{{ item.key }}-{{ item.value.version }}.tgz"
+  loop: "{{ helm_charts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }} {{ item.value.version }}"
+  register: helm_pull
+  until: helm_pull is succeeded
+  retries: 10
+  delay: 15

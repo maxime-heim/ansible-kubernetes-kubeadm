@@ -1,0 +1,6 @@
+longhorn_csi_components:
+  - deployment/csi-attacher
+  - deployment/csi-provisioner
+  - deployment/csi-resizer
+  - deployment/csi-snapshotter
+  - daemonset/longhorn-csi-plugin

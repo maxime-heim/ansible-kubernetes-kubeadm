@@ -1,17 +1,4 @@
 ---
-- name: Ajouter le repo Helm prometheus-community
-  become: false
-  command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
-- name: Mettre à jour les repos Helm
-  become: false
-  command: helm repo update
-  environment:
-    KUBECONFIG: /home/debian/.kube/config
-
 - name: Créer le namespace monitoring
   kubernetes.core.k8s:
     name: "monitoring"
@@ -23,13 +10,13 @@
 
 - name: Installer Prometheus & Grafana
   become: false
-  command: helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring 
+  command: helm upgrade --install kube-prometheus-stack {{ helm_charts_dir }}/kube-prometheus-stack-{{ helm_charts['kube-prometheus-stack'].version }}.tgz --namespace monitoring 
   environment:
     KUBECONFIG: /home/debian/.kube/config
 
 - name: Attendre que Prometheus soit prêt
   become: false
-  command: kubectl rollout status deployment/kube-prometheus-stack-grafana -n monitoring --timeout=120s
+  command: kubectl rollout status deployment/kube-prometheus-stack-grafana -n monitoring --timeout=300s
   environment:
     KUBECONFIG: /home/debian/.kube/config
   changed_when: false

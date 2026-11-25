@@ -2,8 +2,27 @@
 - name: Générer la commande de join
   command: kubeadm token create --print-join-command
   register: join_command_raw
+  until: join_command_raw.rc == 0
+  retries: 6
+  delay: 5
   changed_when: false
 
 - name: Sauvegarder la commande de join dans hostvars
   set_fact:
     kubeadm_join_command: "{{ join_command_raw.stdout }}"
+
+- name: Upload the control plane certificates
+  command: kubeadm init phase upload-certs --upload-certs
+  register: upload_certs
+  until: upload_certs.rc == 0
+  retries: 6
+  delay: 5
+  changed_when: false
+  no_log: true
+  when: groups['control_plane_secondary'] | default([]) | length > 0
+
+- name: Save the certificate key in hostvars
+  set_fact:
+    kubeadm_certificate_key: "{{ upload_certs.stdout_lines | last }}"
+  no_log: true
+  when: groups['control_plane_secondary'] | default([]) | length > 0
