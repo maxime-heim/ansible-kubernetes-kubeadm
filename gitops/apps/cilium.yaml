@@ -4,7 +4,11 @@
 #
 # Argo CD renders the chart without access to the cluster, so the CA and the Hubble
 # certificates are generated on each render. The ones in place are kept: nothing
-# renews them, the two Hubble certificates expire on 2027-11-25 (the CA in 2029).
+# renews them, the Hubble certificates expire one year after the install of the
+# cluster (the CA after three years).
+#
+# Server-side apply: the cilium-dashboard ConfigMap (about 320 kB) does not fit in the
+# last-applied annotation (256 KiB).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -46,4 +50,5 @@ spec:
         - /data
   syncPolicy:
     syncOptions:
+      - ServerSideApply=true
       - RespectIgnoreDifferences=true
